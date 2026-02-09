@@ -54,3 +54,5 @@ psrecord "python -u main.py --dataset popsim --distance_metric inf --c 0 --delta
 where
 * log_performance.txt contains the memory activity of running the code
 * log.txt containts the output of the script in the terminal
+
+Note: [this file](data/popsim_1M.csv) might have different newline characters in different environment. Please make sure to use correct encoding to read this dataset.
