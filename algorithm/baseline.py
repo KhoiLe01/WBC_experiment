@@ -308,4 +308,3 @@ def greedy(vertices, edges, len_v, baseline: int, c: float, maximum_time=0):
             del neighbors_map[v]
     
     return sum(len(i) for i in selected_candidates), True
-

@@ -2,3 +2,6 @@
 !requirements.txt
 __pycache__/
 venv/
+CIKM/
+algorithm/datasets
+**/.vscode

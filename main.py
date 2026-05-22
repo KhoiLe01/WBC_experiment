@@ -1,5 +1,4 @@
 import argparse
-import matplotlib.pyplot as plt
 import numpy as np
 import random
 import time
@@ -11,9 +10,10 @@ ssl._create_default_https_context = ssl._create_unverified_context
 # Algorithms
 from algorithm.r_tree import RTree
 from algorithm.baseline import greedy
+from algorithm.CPGR import run_cpgr
 
 # Load data
-from data.data_loader import load_data_adults, load_data_credits, load_data_gamma, load_data_popsim
+from data.data_loader import load_bipartite_embeddings, load_data_adults, load_data_credits, load_data_gamma, load_data_popsim
 
 # Tree for processing edges
 from scipy.spatial import KDTree as SciPyKDTree
@@ -40,11 +40,13 @@ def run_one_iteration(delta, sample_size, algo, baseline_mode, c, distance_metri
     v_offset = len(v_np)
     for i, neighbors in enumerate(indices):
         for neighbor_idx in neighbors:
-            edges.append((i, neighbor_idx + v_offset))
+            if algo == "cpgr":
+                edges.append((i + 1, neighbor_idx + 1))  # CPGR expects 1-based indexing
+            else:
+                edges.append((i, neighbor_idx + v_offset))
     
-    print(
-        f"Delta: {delta}, Data Size: {sample_size}, Generated graph with {len(vertices)} vertices, length v {len_v} and {len(edges)} edges."
-    )
+    print(f"Constructed graph with {len_v} vertices in V, {len_u} vertices in U, and {len(edges)} edges for delta={delta}")        
+    
     result = {
         "delta": delta,
         "sample_size": sample_size,
@@ -52,6 +54,8 @@ def run_one_iteration(delta, sample_size, algo, baseline_mode, c, distance_metri
         "r_approx_time": 0,
         "baseline_res": 0,
         "baseline_time": 0,
+        "cpgr_res": 0,
+        "cpgr_time": 0,
     }
 
     # Approx r-Tree Approach
@@ -85,9 +89,20 @@ def run_one_iteration(delta, sample_size, algo, baseline_mode, c, distance_metri
             f"Delta: {delta}, Data Size: {sample_size}, Baseline Result: {result['baseline_res']}, Time: {result['baseline_time']:.4f}s"
         )
 
+    if algo == "cpgr":
+        start_cpgr = time.perf_counter()
+        cpgr_result = run_cpgr(len_v, len_u, set(edges))
+        end_cpgr = time.perf_counter()
+        result["cpgr_res"] = sum(cpgr_result["triclique_node_counts"]) + 2 * cpgr_result["remaining_edges"]
+        result["cpgr_time"] = end_cpgr - start_cpgr
+        print(
+            f"Delta: {delta}, Data Size: {sample_size}, CPGR Result: {result['cpgr_res']}, "
+            f"Remaining edges: {cpgr_result['remaining_edges']}, Time: {result['cpgr_time']:.4f}s"
+        )
+
     return result
 
-def main(dataset, c, delta_list, algo, baseline_mode, seed, v_min, v_max, u_min, u_max, distance_metric, max_time):
+def main(dataset, c, delta_list, algo, baseline_mode, seed, v_min, v_max, u_min, u_max, distance_metric, max_time, real_bipartite_csv):
     # Parameters
 
     match dataset:
@@ -99,6 +114,8 @@ def main(dataset, c, delta_list, algo, baseline_mode, seed, v_min, v_max, u_min,
             data_list, v, u = load_data_gamma()
         case "popsim":
             data_list, v, u = load_data_popsim(seed, v_min, v_max, u_min, u_max)
+        case "real_bipartite":
+            data_list, v, u = load_bipartite_embeddings(real_bipartite_csv)
     random.seed(seed)
     sample_size = len(data_list)
     # Prepare tasks
@@ -128,7 +145,8 @@ def main(dataset, c, delta_list, algo, baseline_mode, seed, v_min, v_max, u_min,
     results_raw = []
     for task in tasks:
         results_raw.append(run_one_iteration(*task))
-        time.sleep(10)  # Small delay to track logs more easily
+        if len(tasks) > 1:
+            time.sleep(10)  # Small delay to track logs more easily
     end_total = time.perf_counter()
     print(f"Total execution time: {end_total - start_total:.2f}s")
 
@@ -137,7 +155,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset",
         type=str,
-        choices=["adults", "credits", "gamma", "popsim"],
+        choices=["adults", "credits", "gamma", "popsim", "real_bipartite"],
         default="adults",
         help="Dataset to use for the experiment.",
     )
@@ -155,7 +173,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--delta_list",
-        type=float,
+        type=np.float64,
         nargs="+",
         default=[0.13, 0.14, 0.15, 0.16],
         help="List of delta values to test."
@@ -163,9 +181,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--algo",
         type=str,
-        choices=["baseline", "ouralgo"],
+        choices=["baseline", "ouralgo", "cpgr"],
         default="baseline",
-        help="Algorithm to run: baseline or ouralgo.",
+        help="Algorithm to run: baseline, ouralgo, or cpgr.",
     )
     parser.add_argument(
         "--baseline_mode",
@@ -210,5 +228,10 @@ if __name__ == "__main__":
         default=3600,
         help="Maximum time (in seconds) to allow for the baseline algorithm to run before terminating it.",
     )
+    parser.add_argument(
+        "--real_bipartite_csv",
+        type=str,
+        help="Path to CSV of the embeddings of the real bipartite graph. Only apply if --dataset is set to real_bipartite.",
+    )
     args = parser.parse_args()
-    main(args.dataset, args.c, args.delta_list, args.algo, args.baseline_mode, args.seed, args.v_min, args.v_max, args.u_min, args.u_max, args.distance_metric, args.max_time)
+    main(args.dataset, args.c, args.delta_list, args.algo, args.baseline_mode, args.seed, args.v_min, args.v_max, args.u_min, args.u_max, args.distance_metric, args.max_time, args.real_bipartite_csv)
