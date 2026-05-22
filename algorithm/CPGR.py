@@ -139,17 +139,20 @@ def run_cpgr(left_size, right_size, edges, eps=DELTA_STEP):
 
         best_delta = None
         best_covered_edges = set()
+        best_ratio = 0
         best_tricliques = []
 
         candidate_delta = max(delta_lb, 1.0)
         while candidate_delta > delta_lb:
             tricliques, _ = _run_cpgr(left_size, right_size, candidate_delta)
             tricliques, covered_edges = _covered_edges_from_tricliques(tricliques, current_edges)
-
-            if covered_edges and len(covered_edges) > len(best_covered_edges):
+            nodes_used = sum(len(left) + len(right) for left, right in tricliques)
+            
+            if covered_edges and len(covered_edges)/nodes_used > best_ratio:
                 best_delta = candidate_delta
                 best_covered_edges = covered_edges
                 best_tricliques = tricliques
+                best_ratio = len(covered_edges)/nodes_used
 
             candidate_delta = round(candidate_delta - eps, 12)
 

@@ -54,7 +54,7 @@ The -i is the flag for input file, -s is the flag for algorithm (5 for AMBEA), -
 
 CPGR source code can be found [here](https://github.com/SanazRabinia1/CPGR-Paper/tree/master) or under folder [CPGR](CPGR).
 
-In high level, the CPGR try to create tricliques based on a given value of delta between 0 and 1 (this is different from the 𝛿 in our paper). To fit the greedy fashion of the baselines, we calculate the lower bound of delta $LB_{\text{delta}}$ and iterate through every value of delta between $LB_{\text{delta}}$ and 1 with a default step of 0.05 to see which value returns the tricliques that cover the most number of edges. The process is repeated until CPGR cannot find any tricliques. The result is calculated as the number of vertices used by the tricliques plus two times the number of remaining uncovered edges.
+In high level, the CPGR try to create tricliques based on a given value of delta between 0 and 1 (this is different from the 𝛿 in our paper). To fit the greedy fashion of the baselines and our algorithm, we calculate the lower bound of delta $LB_{\text{delta}}$ and iterate through every value of delta between $LB_{\text{delta}}$ and 1 with a default step of 0.05 to see which value returns the tricliques with the largest ratio $\frac{\text{number of edges cover}}{\text{number of nodes used by the tricliques}}$. The process is repeated until CPGR cannot find any tricliques. The result is calculated as the number of vertices used by the tricliques plus two times the number of remaining uncovered edges.
 
 The size of the step can be modified in line 12 of [this file](algorithm/CPGR.py)
 
