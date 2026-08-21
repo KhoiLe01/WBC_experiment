@@ -64,7 +64,7 @@ To translate an arbitrarily bipartite graph to 𝛿-disk bipartite graph in $\el
 
 Currently support any Matrix Market (mtx) file from this [website](https://sparse.tamu.edu/), [movieslen dataset 100K](https://grouplens.org/datasets/movielens/100k/) (or use directly [this file](data/u.data)), and [movieslen dataset 1M](https://grouplens.org/datasets/movielens/1m/) (or use directly [this file](data/ratings.dat)). Any additional dataset can be modified to work. Please refer to the [this file](scripts/bipartite_to_coordinates.py) logic.
 
-In the file, please fill in the path of the original data file (input_path), the path of the to-be-converted CSV edge file (output_csv_path), and the path to the output embedding file (output_embeddings_path). In addition, to find a good embedding, please tune the hyperparameter of the function embed_coordinates.
+In [the file](scripts/bipartite_to_coordinates.py), please fill in the path of the original data file (input_path), the path of the to-be-converted CSV edge file (output_csv_path), and the path to the output embedding file (output_embeddings_path). In addition, to find a good embedding, please tune the hyperparameter of the function embed_coordinates.
 
 To run the file:
 
