@@ -7,8 +7,8 @@ from decimal import Decimal
 
 EPSILON = 1e-9
 
-class RTreeNode:
-    """Node in an R tree."""
+class KDTreeNode:
+    """Node in a KD tree."""
 
     def __init__(
         self,
@@ -40,9 +40,10 @@ class RTreeNode:
         return self.points_v is not None and len(self.points_v) == 1
 
 
-class RTree:
+
+class KDTree:
     """
-    R Tree
+    KD Tree
     """
 
     def __init__(
@@ -57,7 +58,7 @@ class RTree:
         self.dim = len(points_v[0]) if self.n > 0 else 0
         self.all_nodes = []
 
-        # build a balanced R-tree (using MBRs and widest axis split)
+        # build a balanced KD-Tree
         if len(points_v) > 0:
             pv_arr = np.array(points_v, dtype=np.float64)
         else:
@@ -70,7 +71,7 @@ class RTree:
         )
 
         self.root = self._build_tree(pv_arr, pu_arr, [], delta)
-        print(len(self.all_nodes), "nodes in R-tree built.")
+        print(len(self.all_nodes), "nodes in KD-Tree built.")
 
     def _build_tree(
         self,
@@ -139,7 +140,7 @@ class RTree:
         # convert points_v back to list of tuples for Node storage
         points_v_list = [tuple(x) for x in points_v_arr]
 
-        node = RTreeNode(
+        node = KDTreeNode(
             points_v=points_v_list,
             points_u=current_qualified_list,
             delta=delta,
@@ -239,7 +240,7 @@ class RTree:
 
     def _calculate_node_weight(
         self,
-        node: RTreeNode,
+        node: KDTreeNode,
         points_index: dict,
         B: set[Tuple],
         num_points_v: int,

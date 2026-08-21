@@ -8,7 +8,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 
 # Algorithms
-from algorithm.r_tree import RTree
+from algorithm.kd_tree import KDTree
 from algorithm.baseline import greedy
 from algorithm.CPGR import run_cpgr
 
@@ -50,26 +50,26 @@ def run_one_iteration(delta, sample_size, algo, baseline_mode, c, distance_metri
     result = {
         "delta": delta,
         "sample_size": sample_size,
-        "r_approx_res": 0,
-        "r_approx_time": 0,
+        "kd_tree_res": 0,
+        "kd_tree_time": 0,
         "baseline_res": 0,
         "baseline_time": 0,
         "cpgr_res": 0,
         "cpgr_time": 0,
     }
 
-    # Approx r-Tree Approach
+    # Approx KD-Tree Approach
     if algo == "ouralgo":
-        start_r_approx = time.perf_counter()
-        r_tree_approx = RTree(v, u, delta, c, distance_metric)
+        start_kd_tree_approx = time.perf_counter()
+        kd_tree_approx = KDTree(v, u, delta, c, distance_metric)
         end_build = time.perf_counter()
-        print(f"R-Tree built in {(end_build - start_r_approx):.4f}s")
-        res, _ = r_tree_approx.solve(edges)
-        end_r_approx = time.perf_counter()
-        result["r_approx_res"] = res
-        result["r_approx_time"] = end_r_approx - start_r_approx
+        print(f"KD-Tree built in {(end_build - start_kd_tree_approx):.4f}s")
+        res, _ = kd_tree_approx.solve(edges)
+        end_kd_tree_approx = time.perf_counter()
+        result["kd_tree_res"] = res
+        result["kd_tree_time"] = end_kd_tree_approx - start_kd_tree_approx
         print(
-            f"Delta: {delta}, Data Size: {sample_size}, R-Tree Result: {res}, Time: {(end_r_approx - start_r_approx):.4f}s"
+            f"Delta: {delta}, Data Size: {sample_size}, KD-Tree Result: {res}, Time: {(end_kd_tree_approx - start_kd_tree_approx):.4f}s"
         )
 
     # --- Baseline Approach ---
@@ -132,9 +132,9 @@ def main(dataset, c, delta_list, algo, baseline_mode, seed, v_min, v_max, u_min,
     for delta in delta_list:
         results_aggregated[delta] = {
             "sample_sizes": [sample_size],
-            "r_times_approx": {sample_size: []},
+            "kd_tree_times_approx": {sample_size: []},
             "baseline_times": {sample_size: []},
-            "r_results_approx": {sample_size: []},
+            "kd_tree_results_approx": {sample_size: []},
             "baseline_results": {sample_size: []},
         }
 
